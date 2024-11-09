@@ -7,17 +7,23 @@ from ...models import Clase, EstudianteTaller, AsistenciaEstudiante, Taller
 from ...extensions import db
 
 asistencias_bp = Blueprint('asistencias_admin', __name__)
-@asistencias_bp.route('/', endpoint='asistencia_dashboard')
+
+@asistencias_bp.route('/', methods=['GET'], endpoint='asistencia_dashboard')
 @login_required
 @admin_required
 def asistencia_dashboard():
     talleres = Taller.query.all()
+    
+    # Obtener el ID del taller que se va a mostrar inicialmente (por defecto, el primer taller)
+    taller_id = request.args.get('taller_id', default=talleres[0].taller_id if talleres else None, type=int)
+    selected_taller = Taller.query.get(taller_id) if taller_id else None
+    
     report_data = []
 
-    for taller in talleres:
-        clases = Clase.query.filter_by(taller_id=taller.taller_id).all()
+    if selected_taller:
+        clases = Clase.query.filter_by(taller_id=taller_id).all()
         for clase in clases:
-            total_estudiantes = EstudianteTaller.query.filter_by(taller_id=taller.taller_id).count()
+            total_estudiantes = EstudianteTaller.query.filter_by(taller_id=taller_id).count()
             asistencias = AsistenciaEstudiante.query.filter_by(id_clase=clase.id_clase).all()
             presentes = sum(1 for a in asistencias if a.presencia)
             ausentes = total_estudiantes - presentes
@@ -25,8 +31,8 @@ def asistencia_dashboard():
 
             report_data.append({
                 'fecha': clase.fecha,
-                'taller': taller.nombre,
-                'taller_id': taller.taller_id,
+                'taller': selected_taller.nombre,
+                'taller_id': selected_taller.taller_id,
                 'clase_id': clase.id_clase,
                 'total': total_estudiantes,
                 'presentes': presentes,
@@ -34,7 +40,7 @@ def asistencia_dashboard():
                 'porcentaje_asistencia': porcentaje_asistencia
             })
 
-    return render_template('admin/asistencias_dashboard.html', report_data=report_data, talleres=talleres)
+    return render_template('admin/asistencias_dashboard.html', report_data=report_data, talleres=talleres, selected_taller=selected_taller)
 
 @asistencias_bp.route('/select_clase', methods=['GET', 'POST'], endpoint='select_clase')
 @login_required
@@ -86,10 +92,14 @@ def take_attendance(id_clase):
 @admin_required
 def attendance_details(id_clase):
     clase = Clase.query.get_or_404(id_clase)
+    # Consulta para obtener todas las asistencias con sus detalles
     asistencias = AsistenciaEstudiante.query.filter_by(id_clase=id_clase).all()
-    estudiantes_presentes = [a.estudiante for a in asistencias if a.presencia]
-    estudiantes_ausentes = [a.estudiante for a in asistencias if not a.presencia]
-    return render_template('admin/attendance_details.html', clase=clase, estudiantes_presentes=estudiantes_presentes, estudiantes_ausentes=estudiantes_ausentes)
+    
+    return render_template(
+        'admin/attendance_details.html',
+        clase=clase,
+        asistencias=asistencias
+    )
 
 
 @asistencias_bp.route('/monthly_report', methods=['GET', 'POST'], endpoint='monthly_report')

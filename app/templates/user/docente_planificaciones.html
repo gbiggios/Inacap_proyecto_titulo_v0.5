@@ -1,118 +1,84 @@
-{% extends "user/base_user.html" %}
+{% extends 'admin/base_admin.html' %}
 
-{% block title %}Planificación Anual{% endblock %}
+{% block title %}Gestión de Planificaciones{% endblock %}
 
 {% block content %}
-<div class="flex w-full min-h-screen">
-  <!-- Panel de Objetivo General -->
-  <div class="bg-background rounded-lg shadow-md p-6 flex-1 mr-6 hidden md:block">
-    <div>
-      <h2 class="text-lg font-medium mb-4">Objetivo General</h2>
-      <textarea id="objetivo-general" class="w-full h-20 border rounded p-2" placeholder="Escribe el objetivo general aquí...">{{ objetivo_general }}</textarea>
-    </div>
-    <div class="my-6 border-t border-gray-300"></div>
-    <div class="flex items-center justify-between">
-      <button id="guardar-planificacion" class="px-4 py-2 bg-blue-500 text-white rounded">Guardar Planificación</button>
-    </div>
-  </div>
+<div class="container mt-4 content">
+    <h2 class="text-center mb-4">Gestión de Planificaciones ACLE</h2>
 
-  <!-- Panel de Planificación Mensual -->
-  <div class="w-full max-w-4xl mx-auto p-6 sm:p-10">
-    <h1 class="text-2xl font-bold mb-6">Planificación Mensual de Talleres</h1>
-    <div class="bg-background rounded-lg shadow-md p-6 flex-1">
-      <h2 class="text-lg font-medium mb-4">Planificación Mensual</h2>
-      <div class="tabs">
-        <ul class="flex border-b">
-          {% for mes in meses %}
-          <li class="mr-1">
-            <button class="tab-button px-4 py-2 w-full text-left {% if loop.first %}border-b-2 border-blue-500{% else %}border-b{% endif %}" data-mes="{{ mes }}">
-              {{ mes }}
-            </button>
-          </li>
-          {% endfor %}
-        </ul>
-        <div class="tab-content">
-          {% for mes in meses %}
-          <div class="tab-pane hidden" id="tab-{{ mes|lower }}">
-            {% set planificacion_mes = planificaciones | selectattr('mes', 'equalto', mes) | first %}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-              <div>
-                <label for="habilidades-{{ mes|lower }}" class="block text-sm font-medium mb-1">Habilidades</label>
-                <textarea id="habilidades-{{ mes|lower }}" rows="3" class="w-full border rounded p-2" placeholder="Escribe las habilidades..." data-mes="{{ mes }}" oninput="guardarCambios(this)">{{ planificacion_mes.habilidades if planificacion_mes else '' }}</textarea>
-              </div>
-              <div>
-                <label for="recursos-{{ mes|lower }}" class="block text-sm font-medium mb-1">Recursos</label>
-                <textarea id="recursos-{{ mes|lower }}" rows="3" class="w-full border rounded p-2" placeholder="Escribe los recursos..." data-mes="{{ mes }}" oninput="guardarCambios(this)">{{ planificacion_mes.recursos if planificacion_mes else '' }}</textarea>
-              </div>
-              <div>
-                <label for="actividades-{{ mes|lower }}" class="block text-sm font-medium mb-1">Actividades</label>
-                <textarea id="actividades-{{ mes|lower }}" rows="3" class="w-full border rounded p-2" placeholder="Escribe las actividades..." data-mes="{{ mes }}" oninput="guardarCambios(this)">{{ planificacion_mes.actividades if planificacion_mes else '' }}</textarea>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
+    <!-- Selección de Taller -->
+    <form method="post" action="{{ url_for('admin.planificacion_admin.actualizar_objetivo_general') }}">
+        {{ form.csrf_token }}
+        <div class="mb-3">
+            <label for="taller" class="form-label">Taller</label>
+            <select class="form-select" id="taller" name="taller_id" onchange="this.form.submit()">
+                {% for taller in talleres %}
+                    <option value="{{ taller.taller_id }}" {% if taller == taller_seleccionado %}selected{% endif %}>{{ taller.nombre }}</option>
+                {% endfor %}
+            </select>
         </div>
-      </div>
+
+        <!-- Objetivo General del Taller -->
+        <div class="mb-3">
+            <label for="objetivo_general" class="form-label">Objetivo General</label>
+            <textarea class="form-control" id="objetivo_general" name="objetivo_general" rows="3">{{ taller_seleccionado.objetivo_general }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-custom">Guardar Objetivo General</button>
+    </form>
+
+    <!-- Sidebar de Meses y Planificación -->
+    <div class="row mt-5">
+        <div class="col-md-3">
+            <div class="list-group">
+                {% for mes, estado in planificaciones.items() %}
+                <a href="javascript:void(0);" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="showMes('{{ mes|lower }}')">
+                    {{ mes }}
+                    <span class="badge {% if estado == 'No realizado' %}bg-danger{% elif estado == 'En proceso' %}bg-warning{% else %}bg-success{% endif %}">{{ estado }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Contenedores de Planificación Mensual -->
+        <div class="col-md-9">
+            {% for mes, planificacion in planificaciones.items() %}
+            <div id="mes-{{ mes|lower }}" class="mes-container {% if loop.first %}active-mes{% endif %}">
+                <h4>Planificación para el Mes de {{ mes }}</h4>
+                <form method="post" action="{{ url_for('admin.planificacion_admin.editar_planificacion_admin') }}">
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="id" value="{{ planificacion.id }}">
+                    <input type="hidden" name="taller_id" value="{{ taller_seleccionado.taller_id }}">
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="habilidades-{{ mes|lower }}" class="form-label">Habilidades</label>
+                            <textarea class="form-control" id="habilidades-{{ mes|lower }}" name="habilidades">{{ planificacion.habilidades }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="recursos-{{ mes|lower }}" class="form-label">Recursos</label>
+                            <textarea class="form-control" id="recursos-{{ mes|lower }}" name="recursos">{{ planificacion.recursos }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="actividades-{{ mes|lower }}" class="form-label">Actividades</label>
+                            <textarea class="form-control" id="actividades-{{ mes|lower }}" name="actividades">{{ planificacion.actividades }}</textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Guardar Planificación</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Icono de Chevron Down -->
-<svg class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M6 9l6 6 6-6" />
-</svg>
-
 <script>
-  // Función para mostrar el contenido de la pestaña activa
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-      const mes = button.dataset.mes.toLowerCase();
-      document.querySelectorAll('.tab-content .tab-pane').forEach(pane => {
-        pane.classList.toggle('hidden', !pane.id.includes(mes));
-      });
-      document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.toggle('border-b-2', btn.dataset.mes.toLowerCase() === mes);
-      });
-    });
-  });
-
-  // Función para guardar cambios automáticamente
-  function guardarCambios(element) {
-    const mes = element.dataset.mes;
-    const tipo = element.id.split('-')[0];
-    const valor = element.value;
-    fetch('/guardar_cambios/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ mes, tipo, valor })
-    }).then(response => response.json()).then(data => {
-      if (data.success) {
-        console.log(`Cambios en ${mes} guardados como "En desarrollo"`);
-      } else {
-        console.error('Error al guardar los cambios');
-      }
-    });
-  }
-
-  // Guardar planificación manualmente
-  document.getElementById('guardar-planificacion').addEventListener('click', () => {
-    fetch('/guardar_planificacion/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ estado: 'Planificado' })
-    }).then(response => response.json()).then(data => {
-      if (data.success) {
-        alert('Planificación guardada como "Planificada"');
-      } else {
-        console.error('Error al guardar la planificación');
-      }
-    });
-  });
+    // Mostrar y ocultar meses según selección
+    function showMes(mes) {
+        const meses = document.querySelectorAll('.mes-container');
+        meses.forEach(function(mesElement) {
+            mesElement.classList.remove('active-mes');
+        });
+        document.getElementById('mes-' + mes).classList.add('active-mes');
+    }
 </script>
 {% endblock %}

@@ -4,12 +4,29 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Gestión de Asistencias</h1>
+    <a href="{{ url_for('admin.asistencias_admin.asistencia_dashboard') }}">
+        <i class="fas fa-calendar-check"></i> <span>Gestión de Asistencias</span>
+    </a>
 
+    <!-- Botones de acción -->
     <a href="{{ url_for('admin.asistencias_admin.select_clase') }}" class="btn btn-primary mb-4">Seleccionar Clase</a>
     <a href="{{ url_for('admin.asistencias_admin.monthly_report') }}" class="btn btn-secondary mb-4">Generar Reporte Mensual</a>
-    
 
+    <!-- Desplegable para seleccionar el taller -->
+    <div class="form-group">
+        <label for="tallerSelect">Selecciona un Taller:</label>
+        <form method="get" action="{{ url_for('admin.asistencias_admin.asistencia_dashboard') }}">
+            <select id="tallerSelect" name="taller_id" class="form-control" onchange="this.form.submit()">
+                {% for taller in talleres %}
+                    <option value="{{ taller.taller_id }}" {% if taller == selected_taller %}selected{% endif %}>
+                        {{ taller.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Tabla de reporte de asistencia -->
     <h2>Reporte de Asistencia</h2>
     <table class="table table-striped">
         <thead>
@@ -34,7 +51,6 @@
                 <td>{{ data.porcentaje_asistencia | round(2) }}%</td>
                 <td>
                     <a href="{{ url_for('admin.asistencias_admin.attendance_details', id_clase=data.clase_id) }}" class="btn btn-info btn-sm">Ver Detalles</a>
-
                 </td>
             </tr>
             {% endfor %}
