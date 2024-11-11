@@ -1,0 +1,25 @@
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Comentario de Bitácora</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for clase in clases %}
+        <tr class="class-item" data-clase-id="{{ clase.id_clase }}">
+            <td>{{ clase.fecha.strftime('%d-%m-%Y') }}</td>
+            <td>{{ clase.comentario_bitacora }}</td>
+            <td>
+                <!-- Botón para suspender la clase -->
+                <form action="{{ url_for('admin.clases_admin.suspender_clase', id_clase=clase.id_clase) }}" method="POST" style="display:inline;">
+                    {{ form.hidden_tag() }}
+                    {{ form.suspendida(value="1") }} <!-- Campo oculto para indicar suspensión -->
+                    <button type="submit" class="btn btn-warning btn-sm">Suspender</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,32 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Historial de Asistencia - Seleccionar Taller</h1>
+
+    <!-- Botón para ver el historial completo en el navegador -->
+    <div class="text-right mb-3">
+        <a href="{{ url_for('admin.historial_admin.informe_general') }}" class="btn btn-primary">
+            Ver Informe General
+        </a>
+        
+        <a href="{{ url_for('admin.historial_admin.exportar_historial_general') }}" class="btn btn-success">
+            Descargar Informe General
+        </a>
+    </div>
+
+    <!-- Lista de talleres con botones de descarga de informe -->
+    <div class="list-group">
+        {% for taller in talleres %}
+        <div class="d-flex justify-content-between align-items-center list-group-item">
+            <a href="{{ url_for('admin.historial_admin.historial_asistencia', taller_id=taller.taller_id) }}" class="flex-grow-1">
+                {{ taller.nombre }}
+            </a>
+            <a href="{{ url_for('admin.historial_admin.exportar_historial_por_taller', taller_id=taller.taller_id) }}" class="btn btn-info btn-sm">
+                Descargar Informe
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'user/base_user.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Clases del Taller: {{ taller.nombre }}</h2>
+    
+    {% if clases %}
+        <ul class="list-group">
+            {% for clase in clases %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ clase.nombre }} - Fecha: {{ clase.fecha.strftime('%d/%m/%Y') }}
+                    <!-- Botón para ver los detalles de la clase -->
+                    <a href="{{ url_for('docente.docente_clases.clase_detalle', clase_id=clase.id_clase) }}" class="btn btn-primary btn-sm">Ver detalles</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay clases asignadas a este taller.</p>
+    {% endif %}
+</div>
+{% endblock %}

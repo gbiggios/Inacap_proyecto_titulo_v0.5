@@ -1,0 +1,59 @@
+{% extends 'user/base_user.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar de talleres -->
+        <div class="col-md-3">
+            <h2 class="text-lg font-bold mb-4">Talleres</h2>
+            <ul class="list-group">
+                {% for taller in talleres %}
+                    <li
+                        class="list-group-item p-2 rounded cursor-pointer {% if taller.taller_id == taller_seleccionado.taller_id %}active{% endif %}"
+                        onclick="window.location.href='{{ url_for('planificacion_docente.listar_planificaciones_taller', taller_id=taller.taller_id) }}'">
+                        {{ taller.nombre }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <h3>{{ taller_seleccionado.nombre }}</h3>
+            <div class="mb-4">
+                <form action="{{ url_for('planificacion_docente.actualizar_objetivo_general') }}" method="POST">
+                    <input type="hidden" name="taller_id" value="{{ taller_seleccionado.taller_id }}">
+                    <label for="objetivo_general">Objetivo General del Taller</label>
+                    <textarea name="objetivo_general" id="objetivo_general" class="form-control">{{ taller_seleccionado.objetivo_general }}</textarea>
+                    <button type="submit" class="btn btn-primary mt-2">Actualizar Objetivo General</button>
+                </form>
+            </div>
+
+            <!-- Planificaciones mensuales -->
+            <div class="row">
+                {% for mes in meses %}
+                    {% set planificacion = planificaciones.get(mes, None) %} <!-- Usamos .get para evitar errores si el mes no existe -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ mes | capitalize }}</h5>
+                                <p>Habilidades: {{ planificacion.habilidades if planificacion else 'N/A' }}</p>
+                                <p>Recursos: {{ planificacion.recursos if planificacion else 'N/A' }}</p>
+                                <p>Actividades: {{ planificacion.actividades if planificacion else 'N/A' }}</p>
+                                <p>Estado: {{ estados.get(mes, 'No Planificado') }}</p> <!-- Usamos .get para evitar errores -->
+
+                                <!-- Condición para permitir edición solo si el mes anterior está completo -->
+                                {% if planificacion and (estados.get(mes) == 'Planificada' or estados.get(mes) == 'En proceso') %}
+                                    <a href="{{ url_for('planificacion_docente.editar_planificacion_docente', planificacion_id=planificacion.id) }}" class="btn btn-primary">Editar</a>
+                                {% else %}
+                                    <button class="btn btn-secondary" disabled>Completa el mes anterior</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

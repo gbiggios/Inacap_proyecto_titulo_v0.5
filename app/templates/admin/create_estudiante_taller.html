@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Estudiantes a Taller</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Asignación de Estudiantes a Talleres</h1>
+        <form action="{{ url_for('admin.estudiantes_taller_admin.estudiantes_taller_admin_gestionar') }}" method="post" class="mt-4">
+            {{ form.hidden_tag() }}
+            
+            <!-- Selección de Taller -->
+            <div class="form-group">
+                <label for="taller_id">Seleccione el Taller:</label>
+                <select name="taller_id" id="taller_id" class="form-control" required>
+                    <option value="" disabled selected>Seleccione un taller</option>
+                    {% for taller in talleres %}
+                    <option value="{{ taller.taller_id }}">{{ taller.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Búsqueda de Estudiante -->
+            <div class="form-group">
+                <label for="buscar_estudiante">Buscar Estudiante:</label>
+                <input type="text" id="buscar_estudiante" class="form-control" placeholder="Buscar por nombre o RUT">
+            </div>
+            
+            <!-- Lista de Estudiantes Asignados -->
+            <div class="form-group">
+                <label>Estudiantes Asignados al Taller:</label>
+                <div id="lista_estudiantes_asignados" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Aquí se cargarán los estudiantes asignados al taller seleccionado -->
+                    <p class="text-muted">Seleccione un taller para ver los estudiantes asignados.</p>
+                </div>
+            </div>
+            
+            <!-- Botón de Asignación -->
+            <button type="submit" class="btn btn-primary btn-block">Asignar Estudiantes al Taller</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Cargar estudiantes asignados al primer taller por defecto
+            if ($('#taller_id').val()) {
+                loadStudents($('#taller_id').val());
+            }
+
+            // Cambiar estudiantes asignados cuando se selecciona un nuevo taller
+            $('#taller_id').on('change', function() {
+                loadStudents($(this).val());
+            });
+
+            // Función para cargar estudiantes asignados mediante AJAX
+            function loadStudents(taller_id) {
+                $.ajax({
+                    url: '/admin/estudiantes_taller_admin/load_students/' + taller_id,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#lista_estudiantes_asignados').empty(); // Limpiar lista de estudiantes
+                        if (data.length > 0) {
+                            data.forEach(function(estudiante) {
+                                $('#lista_estudiantes_asignados').append(`
+                                    <div class="form-check estudiante">
+                                        <input class="form-check-input" type="checkbox" name="id_estudiantes[]" value="${estudiante.id_estudiante}" id="estudiante${estudiante.id_estudiante}">
+                                        <label class="form-check-label" for="estudiante${estudiante.id_estudiante}">
+                                            ${estudiante.rut_estudiante} - ${estudiante.nombre} ${estudiante.apellido_paterno} ${estudiante.apellido_materno} (${estudiante.curso})
+                                        </label>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            $('#lista_estudiantes_asignados').append('<p class="text-muted">No hay estudiantes asignados a este taller.</p>');
+                        }
+                    },
+                    error: function() {
+                        $('#lista_estudiantes_asignados').html('<p class="text-danger">Error al cargar los estudiantes. Intente nuevamente.</p>');
+                    }
+                });
+            }
+
+            // Filtrar estudiantes en la lista cargada
+            $('#buscar_estudiante').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#lista_estudiantes_asignados .estudiante').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Informe General de Asistencia por Taller y Mes</h1>
+
+    <!-- Botón para descargar el informe general en Excel -->
+    <div class="text-right mb-3">
+        <a href="{{ url_for('admin.historial_admin.exportar_informe_general') }}" class="btn btn-success">
+            Descargar Informe en Excel
+        </a>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Taller</th>
+                {% for mes in meses %}
+                <th>{{ mes }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for taller, asistencia in asistencia_por_taller.items() %}
+            <tr>
+                <td>{{ taller }}</td>
+                {% for mes in meses %}
+                <td>{{ asistencia[mes] }}%</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

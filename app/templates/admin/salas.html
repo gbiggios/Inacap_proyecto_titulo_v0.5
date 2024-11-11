@@ -1,0 +1,113 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Administrar Salas</h1>
+
+    <!-- Botón para abrir el modal de creación de sala -->
+    <button class="btn btn-success mb-4" data-toggle="modal" data-target="#addSalaModal">Crear Sala</button>
+
+    <!-- Listado de salas -->
+    <h2>Salas Existentes</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sala in salas %}
+            <tr>
+                <td>{{ sala.id_sala }}</td>
+                <td>{{ sala.nombre_sala }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.salas_admin.salas_admin_eliminar', id_sala=sala.id_sala) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta sala?');">
+                        {{ form.hidden_tag() }} <!-- CSRF token -->
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                    <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editSalaModal" 
+                            data-id="{{ sala.id_sala }}" 
+                            data-nombre="{{ sala.nombre_sala }}">
+                        Editar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para agregar sala -->
+<div class="modal fade" id="addSalaModal" tabindex="-1" aria-labelledby="addSalaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.salas_admin.salas_admin_crear') }}">
+                {{ form.hidden_tag() }} <!-- CSRF token -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSalaModalLabel">Crear Sala</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        {{ form.nombre_sala.label(class="form-label") }}
+                        {{ form.nombre_sala(class="form-control", placeholder="Nombre de la sala") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Crear Sala</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar sala -->
+<div class="modal fade" id="editSalaModal" tabindex="-1" aria-labelledby="editSalaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editSalaForm" method="POST">
+                {{ form.hidden_tag() }} <!-- CSRF token -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSalaModalLabel">Editar Sala</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id" name="id_sala">
+                    <div class="form-group">
+                        <label for="edit_nombre_sala">Nombre de la Sala</label>
+                        <input type="text" id="edit_nombre_sala" name="nombre_sala" class="form-control" placeholder="Nombre de la sala" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Maneja la carga del modal de edición de sala
+    $('#editSalaModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Botón que abrió el modal
+        var id = button.data('id');
+        var nombre = button.data('nombre');
+
+        var modal = $(this);
+        modal.find('#edit_id').val(id);
+        modal.find('#edit_nombre_sala').val(nombre);
+        modal.find('#editSalaForm').attr('action', '{{ url_for("admin.salas_admin.salas_admin_editar", id_sala=0) }}'.replace('0', id));
+    });
+</script>
+
+{% endblock %}

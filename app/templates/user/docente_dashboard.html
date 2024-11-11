@@ -1,0 +1,59 @@
+{% extends 'user/base_user.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Dashboard del Docente</h2>
+
+    <!-- Contenedor de tarjetas -->
+    <div class="row">
+        <!-- Tarjeta para ver los talleres -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-bounding-box" style="font-size: 2rem;"></i> <!-- Icono -->
+                    <h5 class="card-title mt-2">Ver Talleres</h5>
+                    <!-- El enlace ahora apunta al listado de talleres del docente -->
+                    <a href="{{ url_for('docente.docente_talleres.talleres') }}" class="btn btn-primary">Ir a Talleres</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para ver las planificaciones -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check" style="font-size: 2rem;"></i> <!-- Icono -->
+                    <h5 class="card-title mt-2">Ver Planificaciones</h5>
+                    <!-- Ruta para ver planificaciones del docente -->
+                    <a href="{{ url_for('docente.docente_planificaciones.listar_planificaciones_docente') }}" class="btn btn-primary">Ir a Planificaciones</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para ver las clases -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-book" style="font-size: 2rem;"></i> <!-- Icono -->
+                    <h5 class="card-title mt-2">Ver Clases</h5>
+                    <a href="#" class="btn btn-primary">Ir a Clases</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila para más opciones si es necesario -->
+    <div class="row mt-4">
+        <!-- Opción adicional -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-lines-fill" style="font-size: 2rem;"></i> <!-- Icono -->
+                    <h5 class="card-title mt-2">Gestión de Estudiantes</h5>
+                    <a href="#" class="btn btn-primary">Ir a Estudiantes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

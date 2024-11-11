@@ -1,0 +1,11 @@
+{% if estudiantes_asignados %}
+    <ul class="list-group">
+    {% for estudiante in estudiantes_asignados %}
+        <li class="list-group-item">
+            {{ estudiante.rut_estudiante }} - {{ estudiante.nombre }} {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno }} ({{ estudiante.curso }})
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">No hay estudiantes asignados a este taller.</p>
+{% endif %}

@@ -1,0 +1,69 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Gestión de Clases{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Gestión de Clases</h1>
+
+    <!-- Botones para abrir los modales de creación -->
+    <div class="mb-3">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#crearClaseModal">Crear Clase Individual</button>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#crearMultipleClasesModal">Crear Múltiples Clases</button>
+    </div>
+
+    <!-- Listado de clases existentes por taller en acordeón -->
+    <div class="accordion mt-5" id="accordionTalleres">
+        {% for taller in talleres %}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center" id="heading{{ taller.taller_id }}">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ taller.taller_id }}" aria-expanded="false" aria-controls="collapse{{ taller.taller_id }}">
+                        {{ taller.nombre }}
+                    </button>
+                </h5>
+                <!-- Botón para descargar el informe del taller -->
+                <a href="{{ url_for('admin.clases_admin.exportar_bitacoras', taller_id=taller.taller_id) }}" class="btn btn-info btn-sm">
+                    Descargar Bitácoras
+                </a>
+            </div>
+
+            <div id="collapse{{ taller.taller_id }}" class="collapse" aria-labelledby="heading{{ taller.taller_id }}" data-parent="#accordionTalleres">
+                <div class="card-body">
+                    <!-- Contenedor para las clases cargadas dinámicamente -->
+                    <div id="clases-container-{{ taller.taller_id }}" class="clases-container">
+                        <p class="text-muted">Cargando clases...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.collapse').on('show.bs.collapse', function () {
+            const tallerId = $(this).attr('id').replace('collapse', '');
+            const container = $('#clases-container-' + tallerId);
+
+            // Evita recargar si ya está cargado
+            if (container.data('loaded')) return;
+
+            // Cargar clases usando AJAX
+            $.ajax({
+                url: "{{ url_for('admin.clases_admin.obtener_clases', taller_id=0) }}".replace('0', tallerId),
+                method: 'GET',
+                success: function(data) {
+                    container.html(data);
+                    container.data('loaded', true);
+                },
+                error: function() {
+                    container.html('<p class="text-danger">Error al cargar las clases. Intente nuevamente.</p>');
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

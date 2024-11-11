@@ -1,0 +1,18 @@
+{% extends 'user/base_user.html' %}
+
+{% block title %}Talleres del Docente{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-lg font-bold mb-4">Talleres Disponibles</h2>
+    <ul class="list-group">
+        {% for taller in talleres %}
+        <li 
+            class="list-group-item p-2 rounded cursor-pointer"
+            onclick="window.location.href='{{ url_for('docente.lanificacion_docente.listar_planificaciones_taller', taller_id=taller.taller_id) }}'">
+            {{ taller.nombre }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Detalles de Asistencia{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Detalles de Asistencia para {{ clase.taller.nombre }} - {{ clase.fecha.strftime('%d-%m-%Y') }}</h1>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre del Estudiante</th>
+                <th>Presencia</th>
+                <th>Justificación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asistencia in asistencias %}
+            <tr>
+                <td>{{ asistencia.estudiante.nombre }} {{ asistencia.estudiante.apellido_paterno }} {{ asistencia.estudiante.apellido_materno }}</td>
+                <td class="text-center">
+                    <input type="checkbox" disabled {% if asistencia.presencia %}checked{% endif %}>
+                </td>
+                <td>{{ asistencia.justificacion if asistencia.justificacion else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('admin.asistencias_admin.asistencia_dashboard') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

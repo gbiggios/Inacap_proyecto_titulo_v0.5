@@ -1,0 +1,54 @@
+{% extends 'user/base_user.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Detalles de la Clase para {{ clase.taller.nombre }} - {{ clase.fecha.strftime('%d-%m-%Y') }}</h1>
+
+    <!-- Formulario para actualizar la bitácora -->
+    <form method="POST">
+        {{ bitacora_form.hidden_tag() }} <!-- Token CSRF para el formulario de bitácora -->
+        <div class="mb-3">
+            <label for="comentario_bitacora" class="form-label">Comentario de la Bitácora:</label>
+            <textarea class="form-control" id="comentario_bitacora" name="comentario_bitacora" rows="3">{{ clase.comentario_bitacora }}</textarea>
+        </div>
+        <button type="submit" name="guardar_bitacora" class="btn btn-primary">Guardar Bitácora</button>
+    </form>
+
+    <hr>
+
+    <!-- Tabla de asistencias -->
+    <h2 class="mt-4">Asistencias</h2>
+    <form method="POST">
+        {{ asistencia_form.hidden_tag() }} <!-- Token CSRF para el formulario de asistencia -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre del Estudiante</th>
+                    <th>Presencia</th>
+                    <th>Justificación</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asistencia in asistencias %}
+                <tr>
+                    <td>{{ asistencia.estudiante.nombre }} {{ asistencia.estudiante.apellido_paterno }} {{ asistencia.estudiante.apellido_materno }}</td>
+                    <td class="text-center">
+                        <input type="checkbox" name="presencia_{{ asistencia.id_asistencia }}" {% if asistencia.presencia %}checked{% endif %}>
+                    </td>
+                    <td>
+                        {% if not asistencia.presencia %}
+                        <input type="text" name="justificacion_{{ asistencia.id_asistencia }}" value="{{ asistencia.justificacion }}">
+                        {% else %}
+                        <span>Justificación opcional</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" name="guardar_asistencia" class="btn btn-primary">Guardar Asistencia</button>
+    </form>
+
+    <a href="{{ url_for('docente.dashboard') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

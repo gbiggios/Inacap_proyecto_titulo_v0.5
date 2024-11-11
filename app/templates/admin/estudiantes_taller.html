@@ -1,0 +1,175 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Gestión de Estudiantes en Talleres{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Gestión de Estudiantes en Talleres</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('admin.estudiantes_taller_admin.estudiantes_taller_admin_gestionar') }}" method="POST" id="form-asignacion">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="taller_id">Selecciona un Taller</label>
+            <select id="taller_id" name="taller_id" class="form-control" required>
+                <option value="" disabled selected>Seleccione un taller</option>
+                {% for taller in talleres %}
+                <option value="{{ taller.taller_id }}">{{ taller.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <div class="row">
+            <div class="col-md-6">
+                <label for="lista_estudiantes">Estudiantes</label>
+                <input type="text" id="buscar_estudiantes" class="form-control mb-3" placeholder="Buscar estudiante...">
+                <select id="lista_estudiantes" class="form-control" multiple size="10">
+                    {% for estudiante in estudiantes %}
+                    <option value="{{ estudiante.id_estudiante }}">
+                        {{ estudiante.nombre }} {{ estudiante.apellido_paterno }} - {{ estudiante.curso }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div class="col-md-6">
+                <label for="estudiantes_seleccionados">Estudiantes Seleccionados</label>
+                <input type="text" id="buscar_seleccionados" class="form-control mb-3" placeholder="Buscar estudiante seleccionado...">
+                <select id="estudiantes_seleccionados" name="id_estudiantes[]" class="form-control" multiple size="10"></select>
+            </div>
+        </div>
+    
+        <button type="submit" class="btn btn-primary mt-3">Asignar Estudiantes al Taller</button>
+    </form>
+    
+    <script>
+        $(document).ready(function() {
+            // Filtrar estudiantes no seleccionados
+            $('#buscar_estudiantes').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#lista_estudiantes option').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+    
+            // Filtrar estudiantes seleccionados
+            $('#buscar_seleccionados').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#estudiantes_seleccionados option').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+    
+            // Mover estudiante a "seleccionados" solo si no está ya en la lista
+            $('#lista_estudiantes').on('dblclick', 'option', function() {
+                var estudianteId = $(this).val();
+                if (!$('#estudiantes_seleccionados option[value="' + estudianteId + '"]').length) {
+                    $('#estudiantes_seleccionados').append($(this));  // Mover el elemento sin clonarlo
+                }
+            });
+    
+            // Mover estudiante a lista "no seleccionados" solo si no está ya en la lista
+            $('#estudiantes_seleccionados').on('dblclick', 'option', function() {
+                var estudianteId = $(this).val();
+                if (!$('#lista_estudiantes option[value="' + estudianteId + '"]').length) {
+                    $('#lista_estudiantes').append($(this));  // Mover el elemento sin clonarlo
+                }
+            });
+    
+            // Seleccionar todas las opciones de "estudiantes_seleccionados" al enviar el formulario
+            $('#form-asignacion').on('submit', function() {
+                $('#estudiantes_seleccionados option').prop('selected', true);
+            });
+        });
+    </script>
+    
+
+    <h2 class="mt-5">Estudiantes Inscritos por Taller</h2>
+    <ul class="nav nav-tabs" id="talleresTab" role="tablist">
+        {% for taller in talleres %}
+        <li class="nav-item">
+            <a class="nav-link" id="tab-{{ taller.taller_id }}-tab" data-toggle="tab" href="#tab-{{ taller.taller_id }}" role="tab" aria-controls="tab-{{ taller.taller_id }}" aria-selected="false">{{ taller.nombre }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content" id="talleresTabContent">
+        {% for taller in talleres %}
+        <div class="tab-pane fade" id="tab-{{ taller.taller_id }}" role="tabpanel" aria-labelledby="tab-{{ taller.taller_id }}-tab">
+            <div id="estudiantes-container-{{ taller.taller_id }}">
+                <!-- Los estudiantes se cargarán aquí dinámicamente -->
+                <p class="text-muted">Seleccione un taller para ver los estudiantes asignados.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Filtrar estudiantes no seleccionados
+        $('#buscar_estudiantes').on('keyup', function() {
+            var value = $(this).val().toLowerCase();
+            $('#lista_estudiantes option').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Filtrar estudiantes seleccionados
+        $('#buscar_seleccionados').on('keyup', function() {
+            var value = $(this).val().toLowerCase();
+            $('#estudiantes_seleccionados option').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Doble clic para mover estudiante a "seleccionados"
+        $('#lista_estudiantes').on('dblclick', 'option', function() {
+            var estudianteId = $(this).val();
+            if (!$('#estudiantes_seleccionados option[value="' + estudianteId + '"]').length) {
+                $('#estudiantes_seleccionados').append($(this));  // Mover sin duplicar
+            }
+        });
+
+        // Doble clic para regresar estudiante a "no seleccionados"
+        $('#estudiantes_seleccionados').on('dblclick', 'option', function() {
+            var estudianteId = $(this).val();
+            if (!$('#lista_estudiantes option[value="' + estudianteId + '"]').length) {
+                $('#lista_estudiantes').append($(this));  // Mover sin duplicar
+            }
+        });
+
+        // Cargar estudiantes inscritos en un taller al cambiar de pestaña
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var target = $(e.target).attr("href");
+            var tallerId = target.split('-')[1]; // Obtener el ID del taller
+
+            // Llamada AJAX para cargar los estudiantes del taller seleccionado
+            $.ajax({
+                url: "{{ url_for('admin.estudiantes_taller_admin.load_students', taller_id=0) }}".replace('0', tallerId),
+                success: function(data) {
+                    $('#estudiantes-container-' + tallerId).html(data);  // Insertar HTML directamente
+                },
+                error: function() {
+                    $('#estudiantes-container-' + tallerId).html('<p class="text-danger">Error al cargar los estudiantes. Intente nuevamente.</p>');
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
